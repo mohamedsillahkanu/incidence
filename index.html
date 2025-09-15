@@ -256,6 +256,19 @@
             font-weight: normal;
         }
 
+        .select-all-buttons {
+            margin: 1rem 0;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -276,6 +289,8 @@
             border-radius: 15px;
             width: 80%;
             max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(37, 99, 235, 0.3);
         }
@@ -377,6 +392,10 @@
             
             <div class="column-selection">
                 <h4>Available Columns</h4>
+                <div class="select-all-buttons">
+                    <button id="selectAllBtn" class="btn btn-primary btn-small">Select All</button>
+                    <button id="deselectAllBtn" class="btn btn-secondary btn-small">Deselect All</button>
+                </div>
                 <div id="columnCheckboxes" class="checkbox-group">
                     <!-- Checkboxes will be populated dynamically -->
                 </div>
@@ -411,6 +430,8 @@
             document.getElementById('cancelBtn').addEventListener('click', hideColumnModal);
             document.getElementById('downloadBtn').addEventListener('click', downloadFile);
             document.getElementById('startOverBtn').addEventListener('click', startOver);
+            document.getElementById('selectAllBtn').addEventListener('click', selectAllColumns);
+            document.getElementById('deselectAllBtn').addEventListener('click', deselectAllColumns);
 
             // Modal close functionality
             const modal = document.getElementById('columnModal');
@@ -549,6 +570,7 @@
                 checkbox.type = 'checkbox';
                 checkbox.id = `col_${col}`;
                 checkbox.value = col;
+                checkbox.name = 'columnSelection';
                 
                 const label = document.createElement('label');
                 label.htmlFor = `col_${col}`;
@@ -566,18 +588,28 @@
             document.getElementById('columnModal').style.display = 'none';
         }
 
+        function selectAllColumns() {
+            const checkboxes = document.querySelectorAll('#columnCheckboxes input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        }
+
+        function deselectAllColumns() {
+            const checkboxes = document.querySelectorAll('#columnCheckboxes input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        }
+
         function generateReport() {
-            console.log('Generate report button clicked'); // Debug log
+            console.log('Generate report button clicked');
             
-            // Get selected columns from multi-select
-            const select = document.getElementById('columnSelect');
-            if (!select) {
-                showAlert('Column selection not found.', 'error');
-                return;
-            }
+            // Get selected columns from dropdown checkboxes
+            const checkboxes = document.querySelectorAll('#columnOptions input[type="checkbox"]:checked');
+            selectedColumns = Array.from(checkboxes).map(checkbox => checkbox.value);
             
-            selectedColumns = Array.from(select.selectedOptions).map(option => option.value);
-            console.log('Selected columns:', selectedColumns); // Debug log
+            console.log('Selected columns:', selectedColumns);
 
             if (selectedColumns.length === 0) {
                 showAlert('Please select at least one column for the report indicator.', 'error');
@@ -618,7 +650,7 @@
                     return newRow;
                 });
 
-                console.log('Report generated successfully'); // Debug log
+                console.log('Report generated successfully');
                 hideColumnModal();
                 showResults();
                 showAlert(`Report column generated successfully using ${selectedColumns.length} columns!`, 'success');
@@ -723,15 +755,87 @@
                 return;
             }
 
-            const ws = XLSX.utils.json_to_sheet(processedData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Data_with_Report');
-            
-            const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-            const filename = `data_with_report_${timestamp}.xlsx`;
-            
-            XLSX.writeFile(wb, filename);
-            showAlert(`File downloaded successfully as ${filename}!`, 'success');
+            try {
+                // Show loading state
+                const downloadBtn = document.getElementById('downloadBtn');
+                const originalText = downloadBtn.textContent;
+                downloadBtn.textContent = 'Preparing download...';
+                downloadBtn.disabled = true;
+
+                // Create worksheet with the processed data (includes report column)
+                const ws = XLSX.utils.json_to_sheet(processedData);
+                
+                // Auto-size columns for better readability
+                const columns = Object.keys(processedData[0]);
+                const colWidths = columns.map(col => {
+                    const maxLength = Math.max(
+                        col.length,
+                        ...processedData.slice(0, 100).map(row => 
+                            String(row[col] || '').length
+                        )
+                    );
+                    return { wch: Math.min(Math.max(maxLength + 2, 10), 50) };
+                });
+                ws['!cols'] = colWidths;
+
+                // Highlight the report column
+                const reportColIndex = columns.indexOf('report');
+                if (reportColIndex !== -1) {
+                    const reportColLetter = XLSX.utils.encode_col(reportColIndex);
+                    
+                    // Style the header
+                    const headerCell = ws[reportColLetter + '1'];
+                    if (headerCell) {
+                        headerCell.s = {
+                            fill: { fgColor: { rgb: "4CAF50" } },
+                            font: { bold: true, color: { rgb: "FFFFFF" } }
+                        };
+                    }
+                }
+
+                // Create workbook and add worksheet
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Data_with_Report');
+                
+                // Add metadata sheet
+                const metaData = [
+                    ['Report Generation Summary', ''],
+                    ['Generated on', new Date().toLocaleString()],
+                    ['Total records', processedData.length],
+                    ['Selected columns', selectedColumns.join(', ')],
+                    ['Records with report=1', processedData.filter(row => row.report === 1).length],
+                    ['Records with report=0', processedData.filter(row => row.report === 0).length],
+                    ['Reporting rate (%)', Math.round((processedData.filter(row => row.report === 1).length / processedData.length) * 100 * 100) / 100]
+                ];
+                
+                const metaWs = XLSX.utils.aoa_to_sheet(metaData);
+                XLSX.utils.book_append_sheet(wb, metaWs, 'Report_Summary');
+                
+                // Generate filename with timestamp
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+                const filename = `data_with_report_${timestamp}.xlsx`;
+                
+                // Download the file
+                XLSX.writeFile(wb, filename);
+                
+                // Show success message
+                showAlert(`✅ File downloaded successfully as "${filename}"!\n📊 Report column added to ${processedData.length} records\n📈 ${processedData.filter(row => row.report === 1).length} records marked as reported (1)`, 'success');
+                
+                // Reset button
+                setTimeout(() => {
+                    downloadBtn.textContent = originalText;
+                    downloadBtn.disabled = false;
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error downloading file:', error);
+                showAlert('Error downloading file: ' + error.message, 'error');
+                
+                // Reset button on error
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.textContent = 'Download File with Report Column';
+                downloadBtn.disabled = false;
+            }
         }
 
         function startOver() {
