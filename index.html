@@ -567,12 +567,25 @@
         }
 
         function generateReport() {
+            console.log('Generate report button clicked'); // Debug log
+            
             // Get selected columns from multi-select
             const select = document.getElementById('columnSelect');
+            if (!select) {
+                showAlert('Column selection not found.', 'error');
+                return;
+            }
+            
             selectedColumns = Array.from(select.selectedOptions).map(option => option.value);
+            console.log('Selected columns:', selectedColumns); // Debug log
 
             if (selectedColumns.length === 0) {
                 showAlert('Please select at least one column for the report indicator.', 'error');
+                return;
+            }
+
+            if (!uploadedData || uploadedData.length === 0) {
+                showAlert('No data available for processing.', 'error');
                 return;
             }
 
@@ -584,29 +597,35 @@
                 }
             }
 
-            // Create report indicator
-            processedData = uploadedData.map(row => {
-                const newRow = {...row};
-                
-                // Check if any selected column has a non-NA value
-                let hasValue = false;
-                for (const col of selectedColumns) {
-                    const value = row[col];
-                    if (value !== null && value !== undefined && value !== '' && 
-                        value !== 'NA' && value !== 'na' && value !== 'N/A' && 
-                        String(value).trim() !== '') {
-                        hasValue = true;
-                        break;
+            try {
+                // Create report indicator
+                processedData = uploadedData.map(row => {
+                    const newRow = {...row};
+                    
+                    // Check if any selected column has a non-NA value
+                    let hasValue = false;
+                    for (const col of selectedColumns) {
+                        const value = row[col];
+                        if (value !== null && value !== undefined && value !== '' && 
+                            value !== 'NA' && value !== 'na' && value !== 'N/A' && 
+                            String(value).trim() !== '') {
+                            hasValue = true;
+                            break;
+                        }
                     }
-                }
-                
-                newRow.report = hasValue ? 1 : 0;
-                return newRow;
-            });
+                    
+                    newRow.report = hasValue ? 1 : 0;
+                    return newRow;
+                });
 
-            hideColumnModal();
-            showResults();
-            showAlert(`Report column generated successfully using ${selectedColumns.length} columns!`, 'success');
+                console.log('Report generated successfully'); // Debug log
+                hideColumnModal();
+                showResults();
+                showAlert(`Report column generated successfully using ${selectedColumns.length} columns!`, 'success');
+            } catch (error) {
+                console.error('Error generating report:', error);
+                showAlert('Error generating report: ' + error.message, 'error');
+            }
         }
 
         function showResults() {
