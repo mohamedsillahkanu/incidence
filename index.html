@@ -571,29 +571,54 @@
             const fileName = file.name;
             const fileExtension = fileName.split('.').pop().toLowerCase();
 
-            if (!['xlsx', 'xls'].includes(fileExtension)) {
-                showAlert('Please upload an Excel file (.xlsx or .xls)', 'error');
+            if (!['xlsx', 'xls', 'csv'].includes(fileExtension)) {
+                showAlert('Please upload an Excel file (.xlsx, .xls) or CSV file (.csv)', 'error');
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                    
-                    uploadedData = jsonData;
-                    showPreview(jsonData, fileName);
-                    setupColumnMappings(jsonData);
-                    showAlert(`Data file (${fileName}) uploaded successfully!`, 'success');
-                    document.getElementById('previewContainer').classList.remove('hidden');
-                } catch (error) {
-                    showAlert('Error reading Excel file: ' + error.message, 'error');
-                }
-            };
-            reader.readAsArrayBuffer(file);
+            if (fileExtension === 'csv') {
+                // Handle CSV files
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    dynamicTyping: true,
+                    complete: function(results) {
+                        if (results.errors.length > 0) {
+                            showAlert('Error reading CSV file: ' + results.errors[0].message, 'error');
+                            return;
+                        }
+                        
+                        uploadedData = results.data;
+                        showPreview(uploadedData, fileName);
+                        setupColumnMappings(uploadedData);
+                        showAlert(`CSV file (${fileName}) uploaded successfully!`, 'success');
+                        document.getElementById('previewContainer').classList.remove('hidden');
+                    },
+                    error: function(error) {
+                        showAlert('Error reading CSV file: ' + error.message, 'error');
+                    }
+                });
+            } else {
+                // Handle Excel files
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                        
+                        uploadedData = jsonData;
+                        showPreview(jsonData, fileName);
+                        setupColumnMappings(jsonData);
+                        showAlert(`Excel file (${fileName}) uploaded successfully!`, 'success');
+                        document.getElementById('previewContainer').classList.remove('hidden');
+                    } catch (error) {
+                        showAlert('Error reading Excel file: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
         }
 
         function showPreview(data, fileName) {
@@ -627,6 +652,61 @@
             
             html += '</table></div>';
             html += `<p style="color: #9ca3af; margin-top: 1rem;">Showing first 5 rows and 8 columns of ${data.length} total records</p>`;
+            
+            container.innerHTML = html;
+        }
+
+        function updateAdminSelection() {
+            const selectedRadio = document.querySelector('input[name="adminLevel"]:checked');
+            selectedAdminLevel = selectedRadio ? selectedRadio.value : '';
+            
+            const proceedBtn = document.getElementById('proceedToMappingBtn');
+            proceedBtn.disabled = !selectedAdminLevel;
+            
+            if (selectedAdminLevel) {
+                setupAdminMappings();
+                showAlert(`Selected administrative level: ${getAdminLevelDescription(selectedAdminLevel)}`, 'info');
+            }
+        }
+
+        function getAdminLevelDescription(level) {
+            const descriptions = {
+                'national': 'National Level Only',
+                'adm1': 'State/Province Level (ADM1)',
+                'adm1_adm2': 'District Level (ADM1 + ADM2)',
+                'adm1_adm2_adm3': 'Full Hierarchy (ADM1 + ADM2 + ADM3)'
+            };
+            return descriptions[level] || level;
+        }
+
+        function setupAdminMappings() {
+            const container = document.getElementById('adminMappingSection');
+            const columns = uploadedData.length > 0 ? Object.keys(uploadedData[0]) : [];
+            
+            let html = '';
+            
+            if (selectedAdminLevel !== 'national') {
+                const adminLevels = selectedAdminLevel.split('_');
+                
+                adminLevels.forEach(level => {
+                    const levelNum = level.replace('adm', '');
+                    const levelName = level === 'adm1' ? 'State/Province' : 
+                                    level === 'adm2' ? 'District' : 'Sub-district';
+                    
+                    html += `
+                        <div class="form-group">
+                            <label for="${level}Column">${levelName} (${level.toUpperCase()}):</label>
+                            <select id="${level}Column" class="form-control">
+                                <option value="">Select ${levelName.toLowerCase()} column...</option>
+                    `;
+                    
+                    columns.forEach(col => {
+                        html += `<option value="${col}">${col}</option>`;
+                    });
+                    
+                    html += '</select></div>';
+                });
+            }
             
             container.innerHTML = html;
         }
@@ -1002,7 +1082,12 @@
             // Sample data preview
             html += '<h4 style="color: #93c5fd; margin: 1rem 0;">Sample Results (First 5 Records)</h4>';
             html += '<div class="table-container"><table class="table">';
-            html += '<thead><tr><th>ADM1</th><th>ADM2</th><th>ADM3</th>';
+            html += '<thead><tr>';
+            
+            // Dynamic headers based on available admin levels
+            if (columnMappings.adm1) html += '<th>ADM1</th>';
+            if (columnMappings.adm2) html += '<th>ADM2</th>';
+            if (columnMappings.adm3) html += '<th>ADM3</th>';
             
             selectedYears.forEach(year => {
                 html += `<th>Crude ${year}</th><th>Final Adj ${year}</th>`;
@@ -1011,10 +1096,12 @@
             html += '</tr></thead><tbody>';
             
             processedData.slice(0, 5).forEach(row => {
-                html += `<tr>
-                    <td>${row.adm1}</td>
-                    <td>${row.adm2}</td>
-                    <td>${row.adm3}</td>`;
+                html += '<tr>';
+                
+                // Dynamic data based on available admin levels
+                if (columnMappings.adm1) html += `<td>${row.adm1 || 'N/A'}</td>`;
+                if (columnMappings.adm2) html += `<td>${row.adm2 || 'N/A'}</td>`;
+                if (columnMappings.adm3) html += `<td>${row.adm3 || 'N/A'}</td>`;
                 
                 selectedYears.forEach(year => {
                     html += `<td>${(row[`crude_incidence_${year}`] || 0).toFixed(2)}</td>`;
@@ -1071,7 +1158,8 @@
             showAlert('Application reset. Please upload your data file again.', 'info');
         }
 
-        // Make updateYearSelection available globally
+        // Make functions available globally
+        window.updateAdminSelection = updateAdminSelection;
         window.updateYearSelection = updateYearSelection;
     </script>
 </body>
