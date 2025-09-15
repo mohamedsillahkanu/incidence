@@ -605,8 +605,8 @@
         function generateReport() {
             console.log('Generate report button clicked');
             
-            // Get selected columns from dropdown checkboxes
-            const checkboxes = document.querySelectorAll('#columnOptions input[type="checkbox"]:checked');
+            // FIXED: Get selected columns from the correct container
+            const checkboxes = document.querySelectorAll('#columnCheckboxes input[type="checkbox"]:checked');
             selectedColumns = Array.from(checkboxes).map(checkbox => checkbox.value);
             
             console.log('Selected columns:', selectedColumns);
