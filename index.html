@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Malaria Incidence Calculator</title>
+    <title>Report Indicator Processor</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
@@ -44,7 +44,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 0 1rem;
         }
@@ -68,72 +68,6 @@
         .section p {
             color: #9ca3af;
             margin-bottom: 1rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            color: #93c5fd;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid rgba(30, 64, 175, 0.3);
-            border-radius: 8px;
-            font-size: 1rem;
-            background: rgba(15, 23, 42, 0.9);
-            color: #e1effe;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        select.form-control {
-            cursor: pointer;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 0.5rem;
-            margin: 1rem 0;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            padding: 0.5rem;
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 5px;
-            border: 1px solid rgba(37, 99, 235, 0.2);
-        }
-
-        .checkbox-item input[type="checkbox"] {
-            margin-right: 0.5rem;
-        }
-
-        .checkbox-item label {
-            color: #e1effe;
-            cursor: pointer;
-            margin: 0;
-            font-weight: normal;
-            font-size: 0.9rem;
         }
 
         .file-input-wrapper {
@@ -242,12 +176,6 @@
             color: #7dd3fc;
         }
 
-        .alert-warning {
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
-            border-left: 4px solid #fbbf24;
-            color: #fde68a;
-        }
-
         .table-container {
             overflow-x: auto;
             margin: 1rem 0;
@@ -281,7 +209,7 @@
             background: rgba(37, 99, 235, 0.1);
         }
 
-        .column-mapping {
+        .column-selection {
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
             backdrop-filter: blur(15px);
             padding: 1.5rem;
@@ -290,32 +218,79 @@
             border: 1px solid rgba(37, 99, 235, 0.2);
         }
 
-        .column-mapping h4 {
+        .column-selection h4 {
             color: #93c5fd;
             margin-bottom: 1rem;
         }
 
-        .mapping-grid {
+        .checkbox-group {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(30, 64, 175, 0.3);
-            border-radius: 4px;
-            overflow: hidden;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
             margin: 1rem 0;
         }
 
-        .progress-fill {
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 6px;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 0.5rem;
+            accent-color: #2563eb;
+        }
+
+        .checkbox-item label {
+            color: #e1effe;
+            cursor: pointer;
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-            border-radius: 4px;
-            width: 0%;
-            transition: width 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%);
+            backdrop-filter: blur(20px);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+        }
+
+        .close {
+            color: #9ca3af;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #e1effe;
         }
 
         .footer {
@@ -341,186 +316,88 @@
                 padding: 1rem;
             }
 
-            .form-row {
+            .checkbox-group {
                 grid-template-columns: 1fr;
             }
 
-            .mapping-grid {
-                grid-template-columns: 1fr;
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
             }
         }
     </style>
 </head>
 <body>
     <div class="main-header">
-        <h1>MALARIA INCIDENCE CALCULATOR</h1>
-        <p>Upload your data first, then map columns and select years for analysis</p>
+        <h1>REPORT INDICATOR PROCESSOR</h1>
+        <p>Upload your data and create a reporting indicator based on selected columns</p>
     </div>
 
     <div class="container">
         <!-- Alert Container -->
         <div id="alertContainer"></div>
 
-        <!-- Step 1: File Upload -->
-        <div id="step1" class="section">
-            <h3>Step 1: Upload Your Data File</h3>
-            <p>Upload your malaria data file in Excel format. We'll analyze the columns after upload.</p>
+        <!-- File Upload Section -->
+        <div class="section">
+            <h3>Upload Your Data File</h3>
+            <p>Upload your data file in CSV or Excel format. After upload, you'll be able to select columns to consider for the reporting indicator.</p>
             
             <div class="file-input-wrapper">
                 <label class="file-input">
-                    Upload Data File (.xlsx)
-                    <input type="file" id="dataFileInput" accept=".xlsx,.xls">
+                    Upload Data File (.xlsx, .xls, .csv)
+                    <input type="file" id="dataFileInput" accept=".xlsx,.xls,.csv">
                 </label>
             </div>
 
             <div id="previewContainer" class="hidden">
                 <div id="dataPreview"></div>
-                <button id="proceedToMappingBtn" class="btn btn-primary">Proceed to Column Mapping</button>
+                <button id="selectColumnsBtn" class="btn btn-primary">Select Columns for Report</button>
             </div>
         </div>
 
-        <!-- Step 2: Column Mapping -->
-        <div id="step2" class="section hidden">
-            <h3>Step 2: Map Your Columns</h3>
-            <p>Select which columns in your data correspond to the required variables for malaria incidence calculations.</p>
-            
-            <div class="column-mapping">
-                <h4>Required Column Mappings</h4>
-                <div class="mapping-grid">
-                    <div class="form-group">
-                        <label for="yearColumn">Year Column:</label>
-                        <select id="yearColumn" class="form-control">
-                            <option value="">Select year column...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="adm1Column">Administrative Level 1 (ADM1):</label>
-                        <select id="adm1Column" class="form-control">
-                            <option value="">Select ADM1 column...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="adm2Column">Administrative Level 2 (ADM2):</label>
-                        <select id="adm2Column" class="form-control">
-                            <option value="">Select ADM2 column...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="adm3Column">Administrative Level 3 (ADM3):</label>
-                        <select id="adm3Column" class="form-control">
-                            <option value="">Select ADM3 column...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="confColumn">Confirmed Cases Column:</label>
-                        <select id="confColumn" class="form-control">
-                            <option value="">Select confirmed cases...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="testColumn">Tests Performed Column:</label>
-                        <select id="testColumn" class="form-control">
-                            <option value="">Select tests column...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="presColumn">Presumed Cases Column:</label>
-                        <select id="presColumn" class="form-control">
-                            <option value="">Select presumed cases...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="publicColumn">Public Sector Proportion:</label>
-                        <select id="publicColumn" class="form-control">
-                            <option value="">Select public proportion...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="privateColumn">Private Sector Proportion:</label>
-                        <select id="privateColumn" class="form-control">
-                            <option value="">Select private proportion...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="nonColumn">Non-facility Care Proportion:</label>
-                        <select id="nonColumn" class="form-control">
-                            <option value="">Select non-facility proportion...</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 2rem;">
-                <button id="analyzeYearsBtn" class="btn btn-primary">Analyze Available Years</button>
-            </div>
-        </div>
-
-        <!-- Step 3: Year Selection and Additional Columns -->
-        <div id="step3" class="section hidden">
-            <h3>Step 3: Select Years and Additional Columns</h3>
-            
-            <div id="availableYearsInfo" class="alert alert-info"></div>
-            
-            <div class="form-group">
-                <label>Select Years to Include (minimum 2):</label>
-                <div class="checkbox-group" id="yearSelection">
-                    <!-- Years will be populated dynamically -->
-                </div>
-            </div>
-
-            <div id="additionalColumnsSection" class="hidden">
-                <div class="column-mapping">
-                    <h4>Year-Specific Columns</h4>
-                    <p>For each selected year, map the population and reporting rate columns:</p>
-                    <div id="yearSpecificMappings"></div>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 2rem;">
-                <button id="startCalculationBtn" class="btn btn-success" disabled>Start Calculations</button>
-            </div>
-        </div>
-
-        <!-- Step 4: Processing -->
-        <div id="step4" class="section hidden">
-            <h3>Step 4: Processing Data</h3>
-            <div class="progress-bar">
-                <div id="progressFill" class="progress-fill"></div>
-            </div>
-            <div id="processingLog"></div>
-        </div>
-
-        <!-- Step 5: Results -->
-        <div id="step5" class="section hidden">
-            <h3>Step 5: Results</h3>
+        <!-- Results Section -->
+        <div id="resultsSection" class="section hidden">
+            <h3>Results</h3>
             <div id="resultsContainer"></div>
             <div style="text-align: center; margin-top: 2rem;">
-                <button id="downloadResultsBtn" class="btn btn-success">Download Results</button>
+                <button id="downloadBtn" class="btn btn-success">Download File with Report Column</button>
                 <button id="startOverBtn" class="btn btn-secondary">Start Over</button>
             </div>
         </div>
     </div>
 
+    <!-- Column Selection Modal -->
+    <div id="columnModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 style="color: #93c5fd; margin-bottom: 1rem;">Select Columns for Report Indicator</h3>
+            <p style="color: #9ca3af; margin-bottom: 1rem;">
+                Select which columns to consider for the report indicator. If ANY of the selected columns contains a value that is not NA/null/empty, the report will be set to 1, otherwise 0.
+            </p>
+            
+            <div class="column-selection">
+                <h4>Available Columns</h4>
+                <div id="columnCheckboxes" class="checkbox-group">
+                    <!-- Checkboxes will be populated dynamically -->
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button id="generateReportBtn" class="btn btn-success">Generate Report Column</button>
+                <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <div class="footer">
-        <p>Universal Malaria Incidence Calculator | Flexible Column Mapping & Year Selection</p>
+        <p>Report Indicator Processor | Simple and Efficient Data Processing</p>
     </div>
 
     <script>
         // Global variables
         let uploadedData = null;
-        let columnMappings = {};
-        let selectedYears = [];
         let processedData = null;
-        let availableYears = [];
+        let selectedColumns = [];
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -529,23 +406,23 @@
 
         function bindEventListeners() {
             document.getElementById('dataFileInput').addEventListener('change', handleFileUpload);
-            document.getElementById('proceedToMappingBtn').addEventListener('click', () => showStep(2));
-            document.getElementById('analyzeYearsBtn').addEventListener('click', analyzeYears);
-            document.getElementById('startCalculationBtn').addEventListener('click', startCalculations);
-            document.getElementById('downloadResultsBtn').addEventListener('click', downloadResults);
+            document.getElementById('selectColumnsBtn').addEventListener('click', showColumnModal);
+            document.getElementById('generateReportBtn').addEventListener('click', generateReport);
+            document.getElementById('cancelBtn').addEventListener('click', hideColumnModal);
+            document.getElementById('downloadBtn').addEventListener('click', downloadFile);
             document.getElementById('startOverBtn').addEventListener('click', startOver);
-        }
 
-        function showStep(stepNumber) {
-            for (let i = 1; i <= 5; i++) {
-                const step = document.getElementById(`step${i}`);
-                if (step) step.classList.add('hidden');
-            }
+            // Modal close functionality
+            const modal = document.getElementById('columnModal');
+            const closeBtn = document.querySelector('.close');
             
-            const currentStepEl = document.getElementById(`step${stepNumber}`);
-            if (currentStepEl) {
-                currentStepEl.classList.remove('hidden');
-            }
+            closeBtn.addEventListener('click', hideColumnModal);
+            
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    hideColumnModal();
+                }
+            });
         }
 
         function showAlert(message, type = 'info') {
@@ -577,11 +454,10 @@
             }
 
             if (fileExtension === 'csv') {
-                // Handle CSV files
                 Papa.parse(file, {
                     header: true,
                     skipEmptyLines: true,
-                    dynamicTyping: true,
+                    dynamicTyping: false, // Keep as strings to better handle NA values
                     complete: function(results) {
                         if (results.errors.length > 0) {
                             showAlert('Error reading CSV file: ' + results.errors[0].message, 'error');
@@ -590,7 +466,6 @@
                         
                         uploadedData = results.data;
                         showPreview(uploadedData, fileName);
-                        setupColumnMappings(uploadedData);
                         showAlert(`CSV file (${fileName}) uploaded successfully!`, 'success');
                         document.getElementById('previewContainer').classList.remove('hidden');
                     },
@@ -599,18 +474,16 @@
                     }
                 });
             } else {
-                // Handle Excel files
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
                         const data = new Uint8Array(e.target.result);
                         const workbook = XLSX.read(data, {type: 'array'});
                         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, {raw: false}); // Keep as strings
                         
                         uploadedData = jsonData;
                         showPreview(jsonData, fileName);
-                        setupColumnMappings(jsonData);
                         showAlert(`Excel file (${fileName}) uploaded successfully!`, 'success');
                         document.getElementById('previewContainer').classList.remove('hidden');
                     } catch (error) {
@@ -625,10 +498,10 @@
             const container = document.getElementById('dataPreview');
             
             let html = `<h4 style="color: #93c5fd; margin: 1rem 0;">Data Preview (${fileName})</h4>`;
-            html += `<div class="alert alert-info">Found ${data.length} records with ${Object.keys(data[0]).length} columns</div>`;
-            html += '<div class="table-container"><table class="table">';
+            html += `<div class="alert alert-info">Found ${data.length} records with ${Object.keys(data[0] || {}).length} columns</div>`;
             
             if (data.length > 0) {
+                html += '<div class="table-container"><table class="table">';
                 const columns = Object.keys(data[0]);
                 
                 html += '<thead><tr>';
@@ -642,7 +515,175 @@
                 data.slice(0, 5).forEach(row => {
                     html += '<tr>';
                     columns.slice(0, 8).forEach(col => {
-                        html += `<td>${row[col] || ''}</td>`;
+                        const value = row[col];
+                        const displayValue = (value === null || value === undefined || value === '') ? 'NA' : value;
+                        html += `<td>${displayValue}</td>`;
+                    });
+                    if (columns.length > 8) html += '<td>...</td>';
+                    html += '</tr>';
+                });
+                html += '</tbody>';
+                
+                html += '</table></div>';
+                html += `<p style="color: #9ca3af; margin-top: 1rem;">Showing first 5 rows and 8 columns of ${data.length} total records</p>`;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function showColumnModal() {
+            if (!uploadedData || uploadedData.length === 0) {
+                showAlert('No data available. Please upload a file first.', 'error');
+                return;
+            }
+
+            const columns = Object.keys(uploadedData[0]);
+            const container = document.getElementById('columnCheckboxes');
+            container.innerHTML = '';
+
+            columns.forEach(col => {
+                const checkboxItem = document.createElement('div');
+                checkboxItem.className = 'checkbox-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `col_${col}`;
+                checkbox.value = col;
+                
+                const label = document.createElement('label');
+                label.htmlFor = `col_${col}`;
+                label.textContent = col;
+                
+                checkboxItem.appendChild(checkbox);
+                checkboxItem.appendChild(label);
+                container.appendChild(checkboxItem);
+            });
+
+            document.getElementById('columnModal').style.display = 'block';
+        }
+
+        function hideColumnModal() {
+            document.getElementById('columnModal').style.display = 'none';
+        }
+
+        function generateReport() {
+            // Get selected columns from multi-select
+            const select = document.getElementById('columnSelect');
+            selectedColumns = Array.from(select.selectedOptions).map(option => option.value);
+
+            if (selectedColumns.length === 0) {
+                showAlert('Please select at least one column for the report indicator.', 'error');
+                return;
+            }
+
+            // Check if 'report' column already exists
+            const hasReportColumn = uploadedData[0].hasOwnProperty('report');
+            if (hasReportColumn) {
+                if (!confirm('A "report" column already exists. Do you want to overwrite it?')) {
+                    return;
+                }
+            }
+
+            // Create report indicator
+            processedData = uploadedData.map(row => {
+                const newRow = {...row};
+                
+                // Check if any selected column has a non-NA value
+                let hasValue = false;
+                for (const col of selectedColumns) {
+                    const value = row[col];
+                    if (value !== null && value !== undefined && value !== '' && 
+                        value !== 'NA' && value !== 'na' && value !== 'N/A' && 
+                        String(value).trim() !== '') {
+                        hasValue = true;
+                        break;
+                    }
+                }
+                
+                newRow.report = hasValue ? 1 : 0;
+                return newRow;
+            });
+
+            hideColumnModal();
+            showResults();
+            showAlert(`Report column generated successfully using ${selectedColumns.length} columns!`, 'success');
+        }
+
+        function showResults() {
+            const container = document.getElementById('resultsContainer');
+            
+            // Calculate summary statistics
+            const totalRecords = processedData.length;
+            const reportedRecords = processedData.filter(row => row.report === 1).length;
+            const notReportedRecords = totalRecords - reportedRecords;
+            const reportingRate = totalRecords > 0 ? Math.round((reportedRecords / totalRecords) * 100 * 100) / 100 : 0;
+
+            let html = `
+                <div class="alert alert-success">
+                    Report column generated successfully based on columns: <strong>${selectedColumns.join(', ')}</strong>
+                </div>
+                
+                <div class="column-selection">
+                    <h4>Summary Statistics</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                        <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="color: #93c5fd; font-size: 1.5rem; font-weight: bold;">${totalRecords}</div>
+                            <div style="color: #9ca3af;">Total Records</div>
+                        </div>
+                        <div style="background: rgba(5, 150, 105, 0.3); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="color: #6ee7b7; font-size: 1.5rem; font-weight: bold;">${reportedRecords}</div>
+                            <div style="color: #9ca3af;">Reported (1)</div>
+                        </div>
+                        <div style="background: rgba(220, 38, 38, 0.3); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="color: #fca5a5; font-size: 1.5rem; font-weight: bold;">${notReportedRecords}</div>
+                            <div style="color: #9ca3af;">Not Reported (0)</div>
+                        </div>
+                        <div style="background: rgba(14, 165, 233, 0.3); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="color: #7dd3fc; font-size: 1.5rem; font-weight: bold;">${reportingRate}%</div>
+                            <div style="color: #9ca3af;">Reporting Rate</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Show preview of data with report column
+            html += '<h4 style="color: #93c5fd; margin: 1rem 0;">Data Preview with Report Column</h4>';
+            html += '<div class="table-container"><table class="table">';
+            
+            if (processedData.length > 0) {
+                const columns = Object.keys(processedData[0]);
+                const reportIndex = columns.indexOf('report');
+                
+                // Move report column to the front for better visibility
+                if (reportIndex > -1) {
+                    columns.splice(reportIndex, 1);
+                    columns.unshift('report');
+                }
+                
+                html += '<thead><tr>';
+                columns.slice(0, 8).forEach(col => {
+                    if (col === 'report') {
+                        html += `<th style="background: rgba(5, 150, 105, 0.5);">${col}</th>`;
+                    } else {
+                        html += `<th>${col}</th>`;
+                    }
+                });
+                if (columns.length > 8) html += '<th>...</th>';
+                html += '</tr></thead>';
+                
+                html += '<tbody>';
+                processedData.slice(0, 10).forEach(row => {
+                    html += '<tr>';
+                    columns.slice(0, 8).forEach(col => {
+                        const value = row[col];
+                        let displayValue = (value === null || value === undefined || value === '') ? 'NA' : value;
+                        
+                        if (col === 'report') {
+                            const bgColor = value === 1 ? 'rgba(5, 150, 105, 0.3)' : 'rgba(220, 38, 38, 0.3)';
+                            html += `<td style="background: ${bgColor}; font-weight: bold;">${displayValue}</td>`;
+                        } else {
+                            html += `<td>${displayValue}</td>`;
+                        }
                     });
                     if (columns.length > 8) html += '<td>...</td>';
                     html += '</tr>';
@@ -651,516 +692,42 @@
             }
             
             html += '</table></div>';
-            html += `<p style="color: #9ca3af; margin-top: 1rem;">Showing first 5 rows and 8 columns of ${data.length} total records</p>`;
-            
+            html += `<p style="color: #9ca3af; margin-top: 1rem;">Showing first 10 rows of ${processedData.length} total records</p>`;
+
             container.innerHTML = html;
+            document.getElementById('resultsSection').classList.remove('hidden');
         }
 
-        function updateAdminSelection() {
-            const selectedRadio = document.querySelector('input[name="adminLevel"]:checked');
-            selectedAdminLevel = selectedRadio ? selectedRadio.value : '';
-            
-            const proceedBtn = document.getElementById('proceedToMappingBtn');
-            proceedBtn.disabled = !selectedAdminLevel;
-            
-            if (selectedAdminLevel) {
-                setupAdminMappings();
-                showAlert(`Selected administrative level: ${getAdminLevelDescription(selectedAdminLevel)}`, 'info');
-            }
-        }
-
-        function getAdminLevelDescription(level) {
-            const descriptions = {
-                'national': 'National Level Only',
-                'adm1': 'State/Province Level (ADM1)',
-                'adm1_adm2': 'District Level (ADM1 + ADM2)',
-                'adm1_adm2_adm3': 'Full Hierarchy (ADM1 + ADM2 + ADM3)'
-            };
-            return descriptions[level] || level;
-        }
-
-        function setupAdminMappings() {
-            const container = document.getElementById('adminMappingSection');
-            const columns = uploadedData.length > 0 ? Object.keys(uploadedData[0]) : [];
-            
-            let html = '';
-            
-            if (selectedAdminLevel !== 'national') {
-                const adminLevels = selectedAdminLevel.split('_');
-                
-                adminLevels.forEach(level => {
-                    const levelNum = level.replace('adm', '');
-                    const levelName = level === 'adm1' ? 'State/Province' : 
-                                    level === 'adm2' ? 'District' : 'Sub-district';
-                    
-                    html += `
-                        <div class="form-group">
-                            <label for="${level}Column">${levelName} (${level.toUpperCase()}):</label>
-                            <select id="${level}Column" class="form-control">
-                                <option value="">Select ${levelName.toLowerCase()} column...</option>
-                    `;
-                    
-                    columns.forEach(col => {
-                        html += `<option value="${col}">${col}</option>`;
-                    });
-                    
-                    html += '</select></div>';
-                });
-            }
-            
-            container.innerHTML = html;
-        }
-
-        function setupColumnMappings(data) {
-            if (data.length === 0) return;
-            
-            const columns = Object.keys(data[0]);
-            const selectors = [
-                'yearColumn', 'adm1Column', 'adm2Column', 'adm3Column',
-                'confColumn', 'testColumn', 'presColumn', 
-                'publicColumn', 'privateColumn', 'nonColumn'
-            ];
-            
-            selectors.forEach(selectorId => {
-                const select = document.getElementById(selectorId);
-                select.innerHTML = '<option value="">Select column...</option>';
-                
-                columns.forEach(col => {
-                    const option = document.createElement('option');
-                    option.value = col;
-                    option.textContent = col;
-                    select.appendChild(option);
-                });
-            });
-        }
-
-        function analyzeYears() {
-            // Validate required mappings
-            const requiredMappings = [
-                'yearColumn', 'adm1Column', 'adm2Column', 'adm3Column',
-                'confColumn', 'testColumn', 'presColumn'
-            ];
-            
-            let isValid = true;
-            requiredMappings.forEach(mapping => {
-                const value = document.getElementById(mapping).value;
-                if (!value) {
-                    showAlert(`Please select a column for ${mapping.replace('Column', '')}`, 'error');
-                    isValid = false;
-                }
-            });
-            
-            if (!isValid) return;
-            
-            // Store mappings
-            const mappingIds = [
-                'yearColumn', 'adm1Column', 'adm2Column', 'adm3Column',
-                'confColumn', 'testColumn', 'presColumn', 
-                'publicColumn', 'privateColumn', 'nonColumn'
-            ];
-            
-            mappingIds.forEach(id => {
-                const value = document.getElementById(id).value;
-                if (value) {
-                    columnMappings[id.replace('Column', '')] = value;
-                }
-            });
-            
-            // Analyze available years
-            const yearColumn = columnMappings.year;
-            availableYears = [...new Set(uploadedData.map(row => parseInt(row[yearColumn])))].filter(year => !isNaN(year)).sort();
-            
-            if (availableYears.length === 0) {
-                showAlert('No valid years found in the year column', 'error');
-                return;
-            }
-            
-            displayAvailableYears();
-            showStep(3);
-        }
-
-        function displayAvailableYears() {
-            const infoContainer = document.getElementById('availableYearsInfo');
-            infoContainer.innerHTML = `Found years in your data: <strong>${availableYears.join(', ')}</strong>`;
-            
-            const yearContainer = document.getElementById('yearSelection');
-            yearContainer.innerHTML = '';
-            
-            availableYears.forEach(year => {
-                const checkboxItem = document.createElement('div');
-                checkboxItem.className = 'checkbox-item';
-                checkboxItem.innerHTML = `
-                    <input type="checkbox" id="year_${year}" value="${year}" onchange="updateYearSelection()">
-                    <label for="year_${year}">${year}</label>
-                `;
-                yearContainer.appendChild(checkboxItem);
-            });
-        }
-
-        function updateYearSelection() {
-            const checkboxes = document.querySelectorAll('#yearSelection input[type="checkbox"]:checked');
-            selectedYears = Array.from(checkboxes).map(cb => parseInt(cb.value)).sort();
-            
-            const startBtn = document.getElementById('startCalculationBtn');
-            startBtn.disabled = selectedYears.length < 2;
-            
-            if (selectedYears.length >= 2) {
-                setupYearSpecificMappings();
-                document.getElementById('additionalColumnsSection').classList.remove('hidden');
-                showAlert(`Selected ${selectedYears.length} years: ${selectedYears.join(', ')}`, 'info');
-            } else {
-                document.getElementById('additionalColumnsSection').classList.add('hidden');
-                if (selectedYears.length > 0) {
-                    showAlert('Please select at least 2 years for analysis', 'warning');
-                }
-            }
-        }
-
-        function setupYearSpecificMappings() {
-            const container = document.getElementById('yearSpecificMappings');
-            const columns = Object.keys(uploadedData[0]);
-            
-            let html = '<div class="mapping-grid">';
-            
-            selectedYears.forEach(year => {
-                html += `
-                    <div class="form-group">
-                        <label for="pop_${year}">Population ${year}:</label>
-                        <select id="pop_${year}" class="form-control">
-                            <option value="">Select population column for ${year}...</option>
-                `;
-                
-                columns.forEach(col => {
-                    html += `<option value="${col}">${col}</option>`;
-                });
-                
-                html += `
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="rr_${year}">Reporting Rate ${year}:</label>
-                        <select id="rr_${year}" class="form-control">
-                            <option value="">Select reporting rate for ${year}...</option>
-                `;
-                
-                columns.forEach(col => {
-                    html += `<option value="${col}">${col}</option>`;
-                });
-                
-                html += `</select></div>`;
-            });
-            
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        async function startCalculations() {
-            // Validate year-specific mappings
-            let isValid = true;
-            selectedYears.forEach(year => {
-                const popCol = document.getElementById(`pop_${year}`).value;
-                const rrCol = document.getElementById(`rr_${year}`).value;
-                
-                if (!popCol || !rrCol) {
-                    showAlert(`Please select population and reporting rate columns for ${year}`, 'error');
-                    isValid = false;
-                }
-            });
-            
-            if (!isValid) return;
-            
-            // Store year-specific mappings
-            selectedYears.forEach(year => {
-                columnMappings[`pop_${year}`] = document.getElementById(`pop_${year}`).value;
-                columnMappings[`rr_${year}`] = document.getElementById(`rr_${year}`).value;
-            });
-            
-            showStep(4);
-            showAlert('Starting incidence calculations...', 'info');
-            
-            try {
-                updateProgress(10);
-                logProgress('Filtering and aggregating data by years...');
-                
-                // Process data
-                processedData = await processData();
-                
-                updateProgress(60);
-                logProgress('Calculating incidence indicators...');
-                
-                // Calculate indicators for each year
-                selectedYears.forEach(year => {
-                    calculateIndicators(processedData, year);
-                });
-                
-                updateProgress(100);
-                logProgress('Calculations completed successfully!');
-                
-                setTimeout(() => {
-                    showStep(5);
-                    displayResults();
-                    showAlert('Incidence calculations completed!', 'success');
-                }, 1000);
-                
-            } catch (error) {
-                showAlert('Error during calculations: ' + error.message, 'error');
-                logProgress(`Error: ${error.message}`);
-            }
-        }
-
-        async function processData() {
-            // Filter data for selected years
-            const filteredData = uploadedData.filter(row => 
-                selectedYears.includes(parseInt(row[columnMappings.year]))
-            );
-            
-            updateProgress(20);
-            
-            // Group by admin levels and year, then aggregate
-            const aggregatedData = {};
-            selectedYears.forEach(year => {
-                aggregatedData[year] = aggregateByAdmin(
-                    filteredData.filter(row => parseInt(row[columnMappings.year]) === year),
-                    year
-                );
-            });
-            
-            updateProgress(40);
-            
-            // Merge all years
-            return mergeYearData(aggregatedData);
-        }
-
-        function aggregateByAdmin(data, year) {
-            const grouped = {};
-            
-            data.forEach(row => {
-                const key = `${row[columnMappings.adm1]}_${row[columnMappings.adm2]}_${row[columnMappings.adm3]}`;
-                if (!grouped[key]) {
-                    grouped[key] = {
-                        adm1: row[columnMappings.adm1],
-                        adm2: row[columnMappings.adm2],
-                        adm3: row[columnMappings.adm3],
-                        [`conf_${year}`]: 0,
-                        [`test_${year}`]: 0,
-                        [`pres_${year}`]: 0
-                    };
-                }
-                grouped[key][`conf_${year}`] += parseFloat(row[columnMappings.conf]) || 0;
-                grouped[key][`test_${year}`] += parseFloat(row[columnMappings.test]) || 0;
-                grouped[key][`pres_${year}`] += parseFloat(row[columnMappings.pres]) || 0;
-            });
-            
-            return Object.values(grouped);
-        }
-
-        function mergeYearData(aggregatedData) {
-            const merged = {};
-            
-            // Get all unique admin combinations
-            selectedYears.forEach(year => {
-                aggregatedData[year].forEach(row => {
-                    const key = `${row.adm1}_${row.adm2}_${row.adm3}`;
-                    if (!merged[key]) {
-                        merged[key] = {
-                            adm1: row.adm1,
-                            adm2: row.adm2,
-                            adm3: row.adm3
-                        };
-                    }
-                    merged[key][`conf_${year}`] = row[`conf_${year}`];
-                    merged[key][`test_${year}`] = row[`test_${year}`];
-                    merged[key][`pres_${year}`] = row[`pres_${year}`];
-                });
-            });
-
-            // Add additional data from original dataset
-            const result = Object.values(merged);
-            result.forEach(row => {
-                const originalRow = uploadedData.find(d => 
-                    d[columnMappings.adm1] === row.adm1 && 
-                    d[columnMappings.adm2] === row.adm2 && 
-                    d[columnMappings.adm3] === row.adm3
-                );
-                if (originalRow) {
-                    selectedYears.forEach(year => {
-                        row[`pop_${year}`] = originalRow[columnMappings[`pop_${year}`]];
-                        row[`rr_${year}`] = originalRow[columnMappings[`rr_${year}`]];
-                    });
-                    row.public = originalRow[columnMappings.public] || 1;
-                    row.private = originalRow[columnMappings.private] || 0;
-                    row.non = originalRow[columnMappings.non] || 0;
-                }
-            });
-
-            return result;
-        }
-
-        function calculateIndicators(data, year) {
-            data.forEach(row => {
-                const conf = row[`conf_${year}`] || 0;
-                const test = row[`test_${year}`] || 0;
-                const pres = row[`pres_${year}`] || 0;
-                const pop = row[`pop_${year}`] || 1;
-                const confRR = row[`rr_${year}`] || 1;
-                const publicProp = row.public || 1;
-                const privateProp = row.private || 0;
-                const nonProp = row.non || 0;
-
-                // Test Positivity Rate
-                row[`TPR_${year}`] = test > 0 ? (conf / test) * 100 : 0;
-
-                // Crude incidence per 1000
-                row[`crude_incidence_${year}`] = (conf / pop) * 1000;
-
-                // Presumed adjusted case count
-                row[`presumed_adjusted_case_${year}`] = conf + (pres * (row[`TPR_${year}`] / 100));
-
-                // Adjusted incidence 1
-                row[`adjusted1_${year}`] = (row[`presumed_adjusted_case_${year}`] / pop) * 1000;
-
-                // Presumed adjusted case divided by reporting rate
-                row[`presumed_adjusted_case_RR_${year}`] = row[`presumed_adjusted_case_${year}`] / confRR;
-
-                // Adjusted incidence 2
-                row[`adjusted2_${year}`] = (row[`presumed_adjusted_case_RR_${year}`] / pop) * 1000;
-
-                // Final adjustments for private and non-facility care
-                const privateAdj = (row[`adjusted2_${year}`] * privateProp) / publicProp;
-                const nonAdj = (row[`adjusted2_${year}`] * nonProp) / publicProp;
-                const totalAdj = row[`adjusted2_${year}`] + privateAdj + nonAdj;
-                row[`adjusted3_${year}`] = (totalAdj / pop) * 1000;
-            });
-        }
-
-        function updateProgress(percentage) {
-            const progressFill = document.getElementById('progressFill');
-            progressFill.style.width = percentage + '%';
-        }
-
-        function logProgress(message) {
-            const container = document.getElementById('processingLog');
-            const logEntry = document.createElement('div');
-            logEntry.className = 'alert alert-info';
-            logEntry.style.margin = '0.5rem 0';
-            logEntry.textContent = message;
-            container.appendChild(logEntry);
-        }
-
-        function displayResults() {
-            const container = document.getElementById('resultsContainer');
-            
+        function downloadFile() {
             if (!processedData || processedData.length === 0) {
-                container.innerHTML = '<div class="alert alert-error">No results to display</div>';
-                return;
-            }
-
-            let html = `<div class="alert alert-success">Calculations completed for ${selectedYears.length} years and ${processedData.length} administrative units</div>`;
-            
-            // Summary statistics
-            html += '<h4 style="color: #93c5fd; margin: 1rem 0;">Summary Statistics</h4>';
-            html += '<div class="table-container"><table class="table">';
-            html += '<thead><tr><th>Year</th><th>Avg Crude Incidence</th><th>Avg Adjusted 1</th><th>Avg Adjusted 2</th><th>Avg Final Adjusted</th></tr></thead><tbody>';
-            
-            selectedYears.forEach(year => {
-                const avgCrude = calculateAverage(processedData, `crude_incidence_${year}`);
-                const avgAdj1 = calculateAverage(processedData, `adjusted1_${year}`);
-                const avgAdj2 = calculateAverage(processedData, `adjusted2_${year}`);
-                const avgAdj3 = calculateAverage(processedData, `adjusted3_${year}`);
-                
-                html += `<tr>
-                    <td>${year}</td>
-                    <td>${avgCrude.toFixed(2)}</td>
-                    <td>${avgAdj1.toFixed(2)}</td>
-                    <td>${avgAdj2.toFixed(2)}</td>
-                    <td>${avgAdj3.toFixed(2)}</td>
-                </tr>`;
-            });
-            
-            html += '</tbody></table></div>';
-            
-            // Sample data preview
-            html += '<h4 style="color: #93c5fd; margin: 1rem 0;">Sample Results (First 5 Records)</h4>';
-            html += '<div class="table-container"><table class="table">';
-            html += '<thead><tr>';
-            
-            // Dynamic headers based on available admin levels
-            if (columnMappings.adm1) html += '<th>ADM1</th>';
-            if (columnMappings.adm2) html += '<th>ADM2</th>';
-            if (columnMappings.adm3) html += '<th>ADM3</th>';
-            
-            selectedYears.forEach(year => {
-                html += `<th>Crude ${year}</th><th>Final Adj ${year}</th>`;
-            });
-            
-            html += '</tr></thead><tbody>';
-            
-            processedData.slice(0, 5).forEach(row => {
-                html += '<tr>';
-                
-                // Dynamic data based on available admin levels
-                if (columnMappings.adm1) html += `<td>${row.adm1 || 'N/A'}</td>`;
-                if (columnMappings.adm2) html += `<td>${row.adm2 || 'N/A'}</td>`;
-                if (columnMappings.adm3) html += `<td>${row.adm3 || 'N/A'}</td>`;
-                
-                selectedYears.forEach(year => {
-                    html += `<td>${(row[`crude_incidence_${year}`] || 0).toFixed(2)}</td>`;
-                    html += `<td>${(row[`adjusted3_${year}`] || 0).toFixed(2)}</td>`;
-                });
-                
-                html += '</tr>';
-            });
-            
-            html += '</tbody></table></div>';
-            html += `<p style="color: #9ca3af; margin-top: 1rem;">Showing 5 of ${processedData.length} records. Download for complete results.</p>`;
-            
-            container.innerHTML = html;
-        }
-
-        function calculateAverage(data, column) {
-            const values = data.map(row => row[column] || 0).filter(val => !isNaN(val) && val > 0);
-            return values.length > 0 ? values.reduce((sum, val) => sum + val, 0) / values.length : 0;
-        }
-
-        function downloadResults() {
-            if (!processedData) {
-                showAlert('No results to download', 'error');
+                showAlert('No processed data available for download.', 'error');
                 return;
             }
 
             const ws = XLSX.utils.json_to_sheet(processedData);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Malaria Incidence Results');
+            XLSX.utils.book_append_sheet(wb, ws, 'Data_with_Report');
             
-            const filename = `malaria_incidence_${selectedYears.join('_')}.xlsx`;
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+            const filename = `data_with_report_${timestamp}.xlsx`;
+            
             XLSX.writeFile(wb, filename);
-            
-            showAlert('Results downloaded successfully!', 'success');
+            showAlert(`File downloaded successfully as ${filename}!`, 'success');
         }
 
         function startOver() {
             uploadedData = null;
             processedData = null;
-            columnMappings = {};
-            selectedYears = [];
-            availableYears = [];
+            selectedColumns = [];
             
-            // Reset file input
             document.getElementById('dataFileInput').value = '';
-            
-            // Clear containers
+            document.getElementById('dataPreview').innerHTML = '';
             document.getElementById('previewContainer').classList.add('hidden');
-            document.getElementById('additionalColumnsSection').classList.add('hidden');
-            document.getElementById('processingLog').innerHTML = '';
-            updateProgress(0);
+            document.getElementById('resultsSection').classList.add('hidden');
             
-            showStep(1);
+            hideColumnModal();
             showAlert('Application reset. Please upload your data file again.', 'info');
         }
-
-        // Make functions available globally
-        window.updateAdminSelection = updateAdminSelection;
-        window.updateYearSelection = updateYearSelection;
     </script>
 </body>
 </html>
